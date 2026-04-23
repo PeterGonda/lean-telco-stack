@@ -1,9 +1,12 @@
 # ansible/playbooks/restart-app.yaml
+# Triggered by monitor.py when worker-app Pod is detected as unhealthy
+# Runs locally — uses kubectl directly, no remote connection needed
 - hosts: localhost
   connection: local
   gather_facts: false
   tasks:
-    - name: Check Worker-App status before initiating restart
+
+    - name: Check Worker-App Pod status before restart
       command: kubectl get pods -l role=app
       register: pod_status
 
@@ -11,9 +14,10 @@
       debug:
         msg: "{{ pod_status.stdout_lines }}"
 
-    - name: Trigger a rolling restart for the Worker-App deployment
+    - name: Trigger a rolling restart of the Worker-App Deployment
+      # Kubernetes will replace the old Pod with a fresh one
       command: kubectl rollout restart deployment/worker-app
-      
-    - name: Confirm restart command was sent
+
+    - name: Confirm restart command was issued
       debug:
         msg: "Rollout restart triggered. Kubernetes will now replace old Pods with new ones."
