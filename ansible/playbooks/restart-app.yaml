@@ -1,6 +1,13 @@
 # ansible/playbooks/restart-app.yaml
-# Triggered by monitor.py when worker-app Pod is detected as unhealthy
-# Runs locally — uses kubectl directly, no remote connection needed
+#
+# MANUAL ALTERNATIVE to the automatic restart in monitor.py
+#
+# monitor.py calls 'kubectl rollout restart' directly via subprocess
+# for speed and simplicity. Use THIS playbook only when you want
+# to trigger a manual restart via Ansible with full status output.
+#
+# To run manually:
+#   ansible-playbook -i ansible/inventory.ini ansible/playbooks/restart-app.yaml
 - hosts: localhost
   connection: local
   gather_facts: false
@@ -15,7 +22,7 @@
         msg: "{{ pod_status.stdout_lines }}"
 
     - name: Trigger a rolling restart of the Worker-App Deployment
-      # Kubernetes will replace the old Pod with a fresh one
+      # Kubernetes will terminate the old Pod and start a fresh one
       command: kubectl rollout restart deployment/worker-app
 
     - name: Confirm restart command was issued
