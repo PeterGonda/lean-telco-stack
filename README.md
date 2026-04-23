@@ -151,4 +151,4 @@ Output: `/var/log/telco-cluster.log`
 **Solution:** `k3d-cluster.sh` installs openssh and starts sshd automatically after container start.
 
 ---
-*Developed by Peter Gonda — Mendelu Brno, IS/ICT Administration, 2025/2026*
+*Developed by Peter Gonda — Self Study Project, 2026*
