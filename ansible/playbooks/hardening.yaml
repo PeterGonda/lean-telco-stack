@@ -1,6 +1,8 @@
 # ansible/playbooks/hardening.yaml
+# Applies basic hardening to all nodes in the cluster
 - hosts: all
   tasks:
+
     - name: Set system hostname based on inventory name
       hostname:
         name: "{{ inventory_hostname }}"
@@ -10,5 +12,7 @@
         name: "{{ item }}"
         state: stopped
         enabled: no
+      # These services are irrelevant in a telco container environment
       loop: ["avahi-daemon", "cups"]
-      ignore_errors: yes # Ignore errors if the service does not exist on a specific OS
+      # Silently skip if the service does not exist on this OS
+      ignore_errors: yes
