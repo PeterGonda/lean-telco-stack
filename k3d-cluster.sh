@@ -27,14 +27,30 @@ docker run -d \
   --ip 10.10.0.6 \
   alpine:3.18 sleep infinity
 
-# Step 4: Install and start SSH on Legacy-Node
+# Step 4: Install and configure SSH on Legacy-Node
 # Alpine does not include SSH by default
 # Ansible requires SSH to connect to this node (unlike k3d pods which use kubectl)
-echo "Step 4: Installing SSH on Legacy-Node..."
+echo "Step 4: Installing and configuring SSH on Legacy-Node..."
 docker exec legacy-node apk add --no-cache openssh
+
 # Generate all required SSH host keys (rsa, ecdsa, ed25519)
 docker exec legacy-node ssh-keygen -A
-# Start the SSH daemon in the background
+
+# Allow root login via SSH — required for Ansible access
+# In a production environment this would be replaced with key-based auth
+docker exec legacy-node sed -i \
+  's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' \
+  /etc/ssh/sshd_config
+
+# Enable password authentication so Ansible can connect
+docker exec legacy-node sed -i \
+  's/#PasswordAuthentication yes/PasswordAuthentication yes/' \
+  /etc/ssh/sshd_config
+
+# Set root password for Ansible SSH access
+docker exec legacy-node sh -c "echo 'root:telco123' | chpasswd"
+
+# Start the SSH daemon
 docker exec legacy-node /usr/sbin/sshd
 
 # Step 5: Create k3d cluster WITHOUT the default Load Balancer
