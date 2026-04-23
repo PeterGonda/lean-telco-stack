@@ -1,0 +1,19 @@
+# ansible/playbooks/restart-app.yaml
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Check Worker-App status before initiating restart
+      command: kubectl get pods -l role=app
+      register: pod_status
+
+    - name: Display current Pod status
+      debug:
+        msg: "{{ pod_status.stdout_lines }}"
+
+    - name: Trigger a rolling restart for the Worker-App deployment
+      command: kubectl rollout restart deployment/worker-app
+      
+    - name: Confirm restart command was sent
+      debug:
+        msg: "Rollout restart triggered. Kubernetes will now replace old Pods with new ones."

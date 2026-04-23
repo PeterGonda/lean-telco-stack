@@ -1,0 +1,14 @@
+# ansible/playbooks/hardening.yaml
+- hosts: all
+  tasks:
+    - name: Set system hostname based on inventory name
+      hostname:
+        name: "{{ inventory_hostname }}"
+
+    - name: Disable and stop unnecessary services
+      service:
+        name: "{{ item }}"
+        state: stopped
+        enabled: no
+      loop: ["avahi-daemon", "cups"]
+      ignore_errors: yes # Ignore errors if the service does not exist on a specific OS

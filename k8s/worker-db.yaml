@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: database
+  template:
+    metadata:
+      labels:
+        role: database
+    spec:
+      containers:
+      - name: db
+        image: almalinux:9
+        # Keep the container running for Ansible configuration
+        command: ["/bin/bash", "-c", "sleep infinity"]
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

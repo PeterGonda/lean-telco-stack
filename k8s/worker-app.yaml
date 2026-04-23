@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: app
+  template:
+    metadata:
+      labels:
+        role: app
+    spec:
+      containers:
+      - name: app
+        image: worker-app:latest
+        imagePullPolicy: Never # Use the locally built Docker image
+        ports:
+        - containerPort: 5000
+---
+# Expose the Deployment as an internal Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker-app
+spec:
+  selector:
+    role: app
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
