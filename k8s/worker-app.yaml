@@ -1,3 +1,9 @@
+# k8s/worker-app.yaml
+# Deployment + Service for Worker-App (Python Flask on Debian 12)
+#
+# IMPORTANT: Before applying this, import the local image into k3d:
+#   docker build -t worker-app:latest ./docker/worker-app/
+#   k3d image import worker-app:latest -c telco-lab
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,11 +21,13 @@ spec:
       containers:
       - name: app
         image: worker-app:latest
-        imagePullPolicy: Never # Use the locally built Docker image
+        # Never pull from registry — use the locally imported image
+        imagePullPolicy: Never
         ports:
         - containerPort: 5000
 ---
-# Expose the Deployment as an internal Service
+# Internal Service — allows worker-proxy (Nginx) to reach
+# the Flask app by DNS name 'worker-app' inside the cluster
 apiVersion: v1
 kind: Service
 metadata:
@@ -28,6 +36,6 @@ spec:
   selector:
     role: app
   ports:
-    - protocol: TCP
-      port: 5000
-      targetPort: 5000
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
