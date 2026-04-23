@@ -1,3 +1,7 @@
+# k8s/worker-db.yaml
+# Deployment for Worker-DB node (AlmaLinux 9)
+# The container runs 'sleep infinity' as a placeholder —
+# MariaDB is installed and configured by Ansible after startup
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,7 +19,7 @@ spec:
       containers:
       - name: db
         image: almalinux:9
-        # Keep the container running for Ansible configuration
+        # Keeps the container alive so Ansible can configure it
         command: ["/bin/bash", "-c", "sleep infinity"]
         resources:
           limits:
