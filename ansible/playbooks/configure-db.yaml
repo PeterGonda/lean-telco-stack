@@ -1,36 +1,41 @@
 # ansible/playbooks/configure-db.yaml
+# Installs and starts MariaDB on the Worker-DB node (AlmaLinux 9)
+#
+# KEY LESSON: Standard containers do NOT run systemd.
+# The normal 'service' module would fail here.
+# Solution: manual init via mysql_install_db + nohup background process.
 - hosts: worker_db
   gather_facts: false
-
   tasks:
+
     - name: Install MariaDB server using DNF
       dnf:
         name: mariadb-server
         state: present
         use_backend: dnf
 
-    - name: Initialize MariaDB system tables (Container fix)
+    - name: Initialize MariaDB system tables (container fix — no systemd)
       command: mysql_install_db --user=mysql --datadir=/var/lib/mysql
       args:
-        # This tells Ansible to skip this step if the database is already initialized
+        # Idempotency check: skip if DB is already initialized
         creates: /var/lib/mysql/mysql
 
-    - name: Ensure correct permissions for the mysql user
+    - name: Ensure correct ownership of the MySQL data directory
       file:
         path: /var/lib/mysql
         owner: mysql
         group: mysql
         recurse: yes
 
-    - name: Start MariaDB process manually
-      # Using nohup ensures the process stays alive in the background
+    - name: Start MariaDB process manually in the background
+      # nohup keeps the process alive after Ansible disconnects
       shell: "nohup /usr/bin/mariadbd-safe --user=mysql > /dev/null 2>&1 &"
       async: 10
       poll: 0
 
-    - name: Wait for MariaDB to become responsive
+    - name: Wait for MariaDB to become responsive (up to 50 seconds)
       command: mysqladmin ping
       register: db_ping
-      retries: 10      # Increased retries to give it 50 seconds to boot
+      retries: 10
       delay: 5
       until: db_ping.rc == 0
