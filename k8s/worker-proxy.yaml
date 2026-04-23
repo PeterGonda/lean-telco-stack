@@ -1,3 +1,7 @@
+# k8s/worker-proxy.yaml
+# ConfigMap + Deployment for Worker-Proxy (Nginx)
+# The nginx.conf is stored in a ConfigMap and mounted into the container
+# This avoids baking the config into the Docker image
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,19 +9,23 @@ metadata:
 data:
   nginx.conf: |
     upstream app_backend {
-        server worker-app:5000;
+      server worker-app:5000;
     }
     server {
-        listen 80;
-        location /api/ {
-            proxy_pass http://app_backend/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-        }
-        location /health {
-            return 200 'proxy-ok';
-            add_header Content-Type text/plain;
-        }
+      listen 80;
+
+      # Route all /api/ requests to the Flask backend
+      location /api/ {
+        proxy_pass http://app_backend/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+      }
+
+      # Health check endpoint for the proxy itself
+      location /health {
+        return 200 'proxy-ok';
+        add_header Content-Type text/plain;
+      }
     }
 ---
 apiVersion: apps/v1
