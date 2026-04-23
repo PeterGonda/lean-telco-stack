@@ -1,11 +1,18 @@
 # ansible/playbooks/hardening.yaml
 # Applies basic hardening to all nodes in the cluster
+#
+# NOTE: This playbook runs on ALL hosts including k3d Pods.
+# In Kubernetes containers, /etc/hostname is read-only — the hostname
+# task will fail silently (ignore_errors: yes) on k3d Pods.
+# It will apply successfully on Legacy-Node where the filesystem is writable.
 - hosts: all
   tasks:
 
     - name: Set system hostname based on inventory name
       hostname:
         name: "{{ inventory_hostname }}"
+      # /etc/hostname is read-only in k3d containers — skip without failing
+      ignore_errors: yes
 
     - name: Disable and stop unnecessary services
       service:
