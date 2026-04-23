@@ -100,4 +100,4 @@ Output: `/var/log/telco-cluster.log`
 **Solution:** Monitor uses `list_namespaced_pod()` and checks `container_statuses[].ready`.
 
 ---
-*Developed by Peter Gonda — Self study project, 2025/2026*
+*Developed by Peter Gonda — Self study project, 2026*
